@@ -34,6 +34,10 @@ Public
 		
 		As a bit of a relevant side note (With regard to 'Mojo'): In situations where you're using a container for frames of an 'Image',
 		using the 'Unsigned_Short' type is usually ideal. (Unless further data is stored within these integers; collision information for example)
+		
+		* Integer types should be assumed to not have the effects of what they're trying to represent.
+		
+		For example: The 'Byte' alias does not necessarily apply "Mod 256/128" to everything, it's meant to be used for potential memory optimization.
 	CORE TYPES:
 		* This module defines 'core-types' as the base types within Monkey.
 		
@@ -119,8 +123,8 @@ Public
 ' Macros:
 Alias UByte = Unsigned_Byte
 Alias UShort = Unsigned_Short
-Alias ULong = Unsigned_Long
 Alias UInt = Unsigned_Int
+Alias ULong = Unsigned_Long
 
 ' Floating-point types:
 #If Not MONKEYLANG_EXTENSION_TYPE_DOUBLE
