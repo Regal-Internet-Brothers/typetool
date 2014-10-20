@@ -37,7 +37,7 @@ Public
 		
 		* Integer types should be assumed to not have the effects of what they're trying to represent.
 		
-		For example: The 'Byte' alias does not necessarily apply "Mod 256/128" to everything, it's meant to be used for potential memory optimization.
+		For example: The 'Octet' alias does not necessarily apply "Mod ((256 or 128) * Sgn(VariableNameHere))" to everything, it's meant to be used for potential memory optimization.
 	CORE TYPES:
 		* This module defines 'core-types' as the base types within Monkey.
 		
@@ -64,15 +64,18 @@ Public
 #End
 
 ' Integer extensions:
-#MONKEYLANG_EXTENSION_TYPE_BYTE = False
+
+' Default integer extension settings:
+#MONKEYLANG_EXTENSION_TYPE_OCTET = False
 #MONKEYLANG_EXTENSION_TYPE_SHORT = False
 #MONKEYLANG_EXTENSION_TYPE_LONG = False
 
 #MONKEYLANG_EXTENSION_UNSIGNED_TYPES = False
 
+' Check for unsigned types:
 #If MONKEYLANG_EXTENSION_UNSIGNED_TYPES
-	#If MONKEYLANG_EXTENSION_TYPE_BYTE
-		#MONKEYLANG_EXTENSION_TYPE_UNISGNED_BYTE = True
+	#If MONKEYLANG_EXTENSION_TYPE_OCTET
+		#MONKEYLANG_EXTENSION_TYPE_UNISGNED_OCTET = True
 	#End
 	
 	#If MONKEYLANG_EXTENSION_TYPE_SHORT
@@ -86,14 +89,24 @@ Public
 	#End
 #End
 
+#If MONKEYLANG_EXTENSION_TYPE_UNISGNED_OCTET
+	#MONKEYLANG_EXTENSION_TYPE_BYTE = True
+	#MONKEYLANG_EXTENSION_TYPE_UNISGNED_BYTE = True
+#End
+
 ' Floating-point extensions:
+
+' Default floating-point extension settings:
 #MONKEYLANG_EXTENSION_TYPE_DOUBLE = False
+
+' Imports:
+Import util
 
 ' Aliases:
 
 ' Integer types:
-#If Not MONKEYLANG_EXTENSION_TYPE_BYTE
-	Alias Byte = Int
+#If Not MONKEYLANG_EXTENSION_TYPE_OCTET
+	Alias Octet = Int
 #End
 
 #If Not MONKEYLANG_EXTENSION_TYPE_SHORT
@@ -104,8 +117,8 @@ Public
 	Alias Long = Int
 #End
 
-#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_BYTE
-	Alias Unsigned_Byte = Byte
+#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_OCTET
+	Alias Unsigned_Octet = Octet
 #End
 
 #If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_SHORT
@@ -121,10 +134,15 @@ Public
 #End
 
 ' Macros:
-Alias UByte = Unsigned_Byte
+Alias UOctet = Unsigned_Octet
 Alias UShort = Unsigned_Short
 Alias UInt = Unsigned_Int
 Alias ULong = Unsigned_Long
+
+Alias Byte = UOctet
+Alias SByte = Octet
+Alias Signed_Byte = SByte
+Alias UByte = Byte
 
 ' Floating-point types:
 #If Not MONKEYLANG_EXTENSION_TYPE_DOUBLE
@@ -135,4 +153,73 @@ Alias ULong = Unsigned_Long
 Alias Long_Double = Double
 
 ' Other:
-'Alias Char = Byte
+'Alias Char = UOctet
+
+' Constant variable(s):
+
+' Type sizes:
+Const OCTET_MAX:Int = 127 ' 128
+Const UOCTET_MAX:Int = 255 ' 256
+
+Const SHORT_MAX:Int = 32767 ' 32768
+Const USHORT_MAX:Int = 65535 ' 65536
+
+Const INT_MAX:Int = 2147483647 ' 2147483648
+Const UINT_MAX:Int = 4294967295 ' 4294967296
+
+' Type-size aliases:
+Const BYTE_MAX:= UOCTET_MAX
+Const SBYTE_MAX:= OCTET_MAX
+
+' Functions:
+Function ApplyByteBounds:Byte(B:Byte)
+	Return Byte(ApplyUOctetBounds(UOctet(B)))
+End
+
+Function ApplySByteBounds:SByte(B:SByte)
+	Return SByte(ApplyOctetBounds(Octet(B)))
+End
+
+Function ApplyOctetBounds:Octet(O:Octet)
+	#If Not MONKEYLANG_EXTENSION_TYPE_OCTET
+		Return SMod(O, OCTET_MAX)
+	#Else
+		Return O
+	#End
+End
+
+Function ApplyUOctetBounds:Octet(O:UOctet)
+	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_OCTET
+		Return SMod(O, UOCTET_MAX)
+	#Else
+		Return O
+	#End
+End
+
+Function ApplyShortBounds:Short(S:Short)
+	#If Not MONKEYLANG_EXTENSION_TYPE_SHORT
+		Return SMod(S, SHORT_MAX)
+	#Else
+		Return S
+	#End
+End
+
+Function ApplyUShortBounds:UShort(S:UShort)
+	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_SHORT
+		Return SMod(S, USHORT_MAX)
+	#Else
+		Return S
+	#End
+End
+
+Function ApplyIntBounds:Int(I:Int)
+	Return I
+End
+
+Function ApplyUIntBounds:UInt(I:UInt)
+	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_INT
+		Return SMod(I, UINT_MAX)
+	#Else
+		Return I
+	#End
+End
