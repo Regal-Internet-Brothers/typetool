@@ -53,6 +53,7 @@ Public
 ' Preprocessor related:
 #TYPETOOL_IMPLEMENTED = True
 #TYPETOOL_SIMULATE_PROPER_BOUNDS = True
+#TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER = True
 
 #Rem
 	As specified in the 'NOTES' section, these will be managed as
@@ -135,11 +136,14 @@ Import util
 #End
 
 ' Macros:
+
+' These are standard under this module's specifications, I recommend using them:
 Alias UOctet = Unsigned_Octet
 Alias UShort = Unsigned_Short
 Alias UInt = Unsigned_Int
 Alias ULong = Unsigned_Long
 
+' These aliases are also meant for real-world use.
 Alias Byte = UOctet
 Alias SByte = Octet
 Alias Signed_Byte = SByte
@@ -158,23 +162,45 @@ Alias Long_Double = Double
 
 ' Constant variable(s):
 
-' Type sizes:
-Const OCTET_MAX:Octet = 127 ' 128
-Const UOCTET_MAX:UOctet = 255 ' 256
+' Maximum bounds (As unsigned literals):
+Const OCTET_MAX_NUMBERS:UOctet = 128
+Const UOCTET_MAX_NUMBERS:UShort = 256
 
-Const SHORT_MAX:Short = 32767 ' 32768
-Const USHORT_MAX:UShort = 65535 ' 65536
+Const OCTET_MAX:Octet = OCTET_MAX_NUMBERS-1
+Const UOCTET_MAX:UOctet = UOCTET_MAX_NUMBERS-1
 
-Const INT_MAX:Int = 2147483647 ' 2147483648
+Const SHORT_MAX_NUMBERS:UShort = 32768
+Const USHORT_MAX_NUMBERS:UInt = 65536
 
-' This is done as a fix for standard versions of Monkey (GCC/MinGW issues):
+Const SHORT_MAX:Short = SHORT_MAX_NUMBERS-1
+Const USHORT_MAX:UShort = USHORT_MAX_NUMBERS-1
+
+' The following fixes were done to deal with Monkey's default 'Int' type, as well as GCC/MinGW issues:
 #If MONKEYLANG_EXTENSION_TYPE_UNISGNED_INT
-	Const UINT_MAX:UInt = 4294967295 ' 4294967296
+	Const INT_MAX_NUMBERS:UInt = 2147483648
+	Const INT_MAX:Int = INT_MAX_NUMBERS-1
 #Else
+	Const INT_MAX_NUMBERS:UInt = 2147483647
+	Const INT_MAX:Int = INT_MAX_NUMBERS
+#End
+
+#If MONKEYLANG_EXTENSION_TYPE_UNISGNED_INT
+	#If MONKEYLANG_EXTENSION_TYPE_UNISGNED_LONG
+		Const UINT_MAXIMUM_NUMBERS:ULong = 4294967296
+		Const UINT_MAX:UInt = UINT_MAXIMUM_NUMBERS-1
+	#Else
+		Const UINT_MAXIMUM_NUMBERS:UInt = 4294967295
+		Const UINT_MAX:UInt = UINT_MAXIMUM_NUMBERS
+	#End
+#Else
+	Const UINT_MAX_NUMBERS:UInt = INT_MAX_NUMBERS
 	Const UINT_MAX:= INT_MAX
 #End
 
-' Type-size aliases:
+' Type-bounds aliases:
+Const BYTE_MAX_NUMBERS:= UOCTET_MAX_NUMBERS
+Const SBYTE_MAX:= OCTET_MAX_NUMBERS
+
 Const BYTE_MAX:= UOCTET_MAX
 Const SBYTE_MAX:= OCTET_MAX
 
@@ -189,7 +215,7 @@ End
 
 Function ApplyOctetBounds:Octet(O:Octet)
 	#If Not MONKEYLANG_EXTENSION_TYPE_OCTET
-		Return SMod(O, OCTET_MAX)
+		Return SMod(O, OCTET_MAX_NUMBERS)
 	#Else
 		Return O
 	#End
@@ -198,9 +224,13 @@ End
 Function ApplyUOctetBounds:Octet(O:UOctet)
 	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_OCTET
 		#If TYPETOOL_SIMULATE_PROPER_BOUNDS
-			Return Abs(O) Mod UOCTET_MAX
+			#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
+				Return (UOCTET_MAX_NUMBERS+O) Mod UOCTET_MAX_NUMBERS
+			#Else
+				Return Abs(O) Mod UOCTET_MAX_NUMBERS
+			#End
 		#Else
-			Return SMod(O, UOCTET_MAX)
+			Return SMod(O, UOCTET_MAX_NUMBERS)
 		#End
 	#Else
 		Return O
@@ -209,7 +239,7 @@ End
 
 Function ApplyShortBounds:Short(S:Short)
 	#If Not MONKEYLANG_EXTENSION_TYPE_SHORT
-		Return SMod(S, SHORT_MAX)
+		Return SMod(S, SHORT_MAX_NUMBERS)
 	#Else
 		Return S
 	#End
@@ -218,9 +248,13 @@ End
 Function ApplyUShortBounds:UShort(S:UShort)
 	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_SHORT
 		#If TYPETOOL_SIMULATE_PROPER_BOUNDS
-			Return Abs(S) Mod USHORT_MAX
+			#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
+				Return (USHORT_MAX_NUMBERS+S) Mod USHORT_MAX_NUMBERS
+			#Else
+				Return Abs(S) Mod USHORT_MAX_NUMBERS
+			#End
 		#Else
-			Return SMod(S, USHORT_MAX)
+			Return SMod(S, USHORT_MAX_NUMBERS)
 		#End
 	#Else
 		Return S
@@ -234,9 +268,13 @@ End
 Function ApplyUIntBounds:UInt(I:UInt)
 	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_INT
 		#If TYPETOOL_SIMULATE_PROPER_BOUNDS
-			Return Abs(I) Mod UINT_MAX
+			#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
+				Return (UINT_MAX_NUMBERS+I) Mod UINT_MAX_NUMBERS
+			#Else
+				Return Abs(I) Mod UINT_MAX_NUMBERS
+			#End
 		#Else
-			Return SMod(I, UINT_MAX)
+			Return SMod(I, UINT_MAX_NUMBERS)
 		#End
 	#Else
 		Return I
