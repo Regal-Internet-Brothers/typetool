@@ -158,14 +158,20 @@ Alias Long_Double = Double
 ' Constant variable(s):
 
 ' Type sizes:
-Const OCTET_MAX:Int = 127 ' 128
-Const UOCTET_MAX:Int = 255 ' 256
+Const OCTET_MAX:Octet = 127 ' 128
+Const UOCTET_MAX:UOctet = 255 ' 256
 
-Const SHORT_MAX:Int = 32767 ' 32768
-Const USHORT_MAX:Int = 65535 ' 65536
+Const SHORT_MAX:Short = 32767 ' 32768
+Const USHORT_MAX:UShort = 65535 ' 65536
 
 Const INT_MAX:Int = 2147483647 ' 2147483648
-Const UINT_MAX:Int = 4294967295 ' 4294967296
+
+' This is done as a fix for standard versions of Monkey (GCC/MinGW issues):
+#If MONKEYLANG_EXTENSION_TYPE_UNISGNED_INT
+	Const UINT_MAX:UInt = 4294967295 ' 4294967296
+#Else
+	Const UINT_MAX:= INT_MAX
+#End
 
 ' Type-size aliases:
 Const BYTE_MAX:= UOCTET_MAX
