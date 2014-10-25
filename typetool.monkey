@@ -52,6 +52,7 @@ Public
 
 ' Preprocessor related:
 #TYPETOOL_IMPLEMENTED = True
+#TYPETOOL_SIMULATE_PROPER_BOUNDS = True
 
 #Rem
 	As specified in the 'NOTES' section, these will be managed as
@@ -196,7 +197,11 @@ End
 
 Function ApplyUOctetBounds:Octet(O:UOctet)
 	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_OCTET
-		Return SMod(O, UOCTET_MAX)
+		#If TYPETOOL_SIMULATE_PROPER_BOUNDS
+			Return Abs(O) Mod UOCTET_MAX
+		#Else
+			Return SMod(O, UOCTET_MAX)
+		#End
 	#Else
 		Return O
 	#End
@@ -212,7 +217,11 @@ End
 
 Function ApplyUShortBounds:UShort(S:UShort)
 	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_SHORT
-		Return SMod(S, USHORT_MAX)
+		#If TYPETOOL_SIMULATE_PROPER_BOUNDS
+			Return Abs(S) Mod USHORT_MAX
+		#Else
+			Return SMod(S, USHORT_MAX)
+		#End
 	#Else
 		Return S
 	#End
@@ -224,7 +233,11 @@ End
 
 Function ApplyUIntBounds:UInt(I:UInt)
 	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_INT
-		Return SMod(I, UINT_MAX)
+		#If TYPETOOL_SIMULATE_PROPER_BOUNDS
+			Return Abs(I) Mod UINT_MAX
+		#Else
+			Return SMod(I, UINT_MAX)
+		#End
 	#Else
 		Return I
 	#End
