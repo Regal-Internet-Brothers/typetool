@@ -241,11 +241,6 @@ Function ApplyUOctetBounds:Octet(O:UOctet)
 	#End
 End
 
-#Rem
-			Return (Int(OCTET_MAX_NUMBERS+O) & (OCTET_MAX)) ' Mod OCTET_MAX_NUMBERS
-			Return (Int(SHORT_MAX_NUMBERS+S) & SHORT_MAX) ' Mod SHORT_MAX_NUMBERS
-#End
-
 Function ApplyShortBounds:Short(S:Short)
 	#If Not MONKEYLANG_EXTENSION_TYPE_SHORT
 		#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
