@@ -225,7 +225,7 @@ Function ApplyOctetBounds:Octet(O:Octet)
 	#End
 End
 
-Function ApplyUOctetBounds:Octet(O:UOctet)
+Function ApplyUOctetBounds:UOctet(O:UOctet)
 	#If Not MONKEYLANG_EXTENSION_TYPE_UNISGNED_OCTET
 		#If TYPETOOL_SIMULATE_PROPER_BOUNDS
 			#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
