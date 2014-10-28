@@ -216,7 +216,7 @@ End
 Function ApplyOctetBounds:Octet(O:Octet)
 	#If Not MONKEYLANG_EXTENSION_TYPE_OCTET
 		#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
-			Return (Int(S) | -UOCTET_MAX_NUMBERS)
+			Return (Int(O) | -UOCTET_MAX_NUMBERS)
 		#Else
 			Return Octet(SMod(O, OCTET_MAX_NUMBERS))
 		#End
@@ -269,6 +269,7 @@ Function ApplyUShortBounds:UShort(S:UShort)
 	#End
 End
 
+' This is just a formality, there's no point to this command right now:
 Function ApplyIntBounds:Int(I:Int)
 	Return I
 End
@@ -278,6 +279,7 @@ Function ApplyUIntBounds:UInt(I:UInt)
 		#If TYPETOOL_SIMULATE_PROPER_BOUNDS
 			#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
 				Return (UINT_MAX_NUMBERS+I) Mod UINT_MAX_NUMBERS
+				'Return (Int(UINT_MAX_NUMBERS+I) & UINT_MAX)
 			#Else
 				Return Abs(I) Mod UINT_MAX_NUMBERS
 			#End
