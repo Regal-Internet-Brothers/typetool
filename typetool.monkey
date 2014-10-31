@@ -9,12 +9,14 @@ Public
 		The types in this module are not usually unique, and you should only
 		expect exact compatibility between obviously compatible aliases.
 		
-		For example, you should not expect a distinction between integer types.
+		For example, you should not expect a distinction between integer types (Without proper preprocessor-flags checks).
 		However, you should generally expect automatic conversion (No matter the implementation).
 	
 	NOTES:
+		* ATTENTION: Please read the 'README' file before adopting this module yourself.
+		
 		* This module was developed with the knowledge these types
-		do not have integrity, and are aliases under normal situations.
+		do not have integrity, and are aliases under normal situations (With default Monkey at least).
 		
 		* Overloads should not expect differences between aliases.
 		These types are expected to boil down to a 'core-type'.
@@ -22,37 +24,52 @@ Public
 		* Use this module at your own risk, types should not be expected to be
 		binary-compatible with what are normally realistic expectations.
 		
-		* These types are meant to future-proof code which could run more optimally in the event Monkey adapts other types.
+		* These types are meant to future-proof code which could run more optimally in the event Monkey adopts other types.
 		Assuming the names are the same as this module, the usual implementations here (Aliases) will be removed or commented out.
 		
 		In the event of naming differences, this module will resolve such issues as needed.
 		
 		* Current (And potentially future) uses of 'Int' arrays should probably stay as such.
 		
-		That being said, in situations where no optimization is done with regard to bit shifting, these situations are far more feasable.
+		That being said, in situations where no optimization is done with regard to bit shifting, these situations are far more feasible.
 		Also realize that if a version of Monkey adds support for arrays of what are currently non-standard integers, compatibility may be an issue.
 		
-		As a bit of a relevant side note (With regard to 'Mojo'): In situations where you're using a container for frames of an 'Image',
-		using the 'Unsigned_Short' type is usually ideal. (Unless further data is stored within these integers; collision information for example)
+		As a bit of a relevant side note (With regard to 'mojo'): In situations where you're using a container for frames of an 'Image' ("Tile-maps" for example),
+		using the 'Unsigned_Short' type is usually ideal (Or one of its aliases, such as 'UShort'). (Unless further data is stored within these integers; collision information for example)
 		
 		* Integer types should be assumed to not have the effects of what they're trying to represent.
 		
-		For example: The 'Octet' alias does not necessarily apply "Mod ((256 or 128) * Sgn(VariableNameHere))" to everything, it's meant to be used for potential memory optimization.
+		For example: The 'Octet' alias does not necessarily apply 'ApplyOctetBounds' to everything, it's meant to be used for potential memory optimization.
+		
+		* If you were to adopt this module, the best course of action tends to be implementing functions via generics/template using classes.
+		Of course, this is the most ideal situation, not the most realistic one. If you're able to off-load functions to a generic class,
+		go right ahead, but stay away from overloading with these types. If you're going to have a single version of a function,
+		use 'Long' or stick to the usual 'Int' (And maybe 'UInt' and/or 'ULong', but those can be problematic at times).
+		
+		If you're expecting conflicts to be resolved without the proper extensions enabled, you're adopting this improperly.
+		On the other hand, if you wish to go the route of supporting these types as alternate overloads, implement multiple versions of the function,
+		then encapsulate those versions with a check for the proper type-extensions. This can also be done with generic/template classes for the sake of code reuse.
+		
+		If a version of Monkey comes along with template/generic functions (Or other functionality), feel free to use those at your own risk.
+		
+		* Only use the "bounds" commands if you absolutely need them. They're only really there as a last resort.
+		Functionality for those commands can be configured with the preprocessor (Be wary of other modules using these commands while configuring them).
 	CORE TYPES:
 		* This module defines 'core-types' as the base types within Monkey.
 		
 		These types are currently as follows:
-			* 'Int'
-			* 'Float'
-			* 'String'
-			* 'Bool'
+			* 'Int' (%)
+			* 'Float' (#)
+			* 'String' ($)
+			* 'Bool' (?)
 		
-		Normally these would be defined as "primitive types", hower the addition of 'String' makes this term inaccurate.
+		Normally these would be defined as "primitive types", however, the addition of 'String' makes this term inaccurate.
 #End
 
 ' Preprocessor related:
 #TYPETOOL_IMPLEMENTED = True
 #TYPETOOL_SIMULATE_SIGNED_TYPES = True
+#TYPETOOL_SIMULATE_SIGNED_TYPES_AS_UNSIGNED = False
 #TYPETOOL_SIMULATE_PROPER_BOUNDS = True
 #TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER = True
 
@@ -67,12 +84,6 @@ Public
 #End
 
 ' Integer extensions:
-
-' Default integer extension settings:
-#MONKEYLANG_EXTENSION_TYPE_OCTET = False
-#MONKEYLANG_EXTENSION_TYPE_SHORT = False
-#MONKEYLANG_EXTENSION_TYPE_LONG = False
-
 #MONKEYLANG_EXTENSION_UNSIGNED_TYPES = False
 
 ' Check for unsigned types:
@@ -97,10 +108,17 @@ Public
 	#MONKEYLANG_EXTENSION_TYPE_UNISGNED_BYTE = True
 #End
 
+' Default integer extension settings:
+#Rem
+	#MONKEYLANG_EXTENSION_TYPE_OCTET = False
+	#MONKEYLANG_EXTENSION_TYPE_SHORT = False
+	#MONKEYLANG_EXTENSION_TYPE_LONG = False
+#End
+
 ' Floating-point extensions:
 
 ' Default floating-point extension settings:
-#MONKEYLANG_EXTENSION_TYPE_DOUBLE = False
+'#MONKEYLANG_EXTENSION_TYPE_DOUBLE = False
 
 ' Imports:
 Import util
@@ -215,11 +233,15 @@ Function ApplySByteBounds:SByte(B:SByte)
 End
 
 Function ApplyOctetBounds:Octet(O:Octet)
-	#If TYPETOOL_SIMULATE_SIGNED_TYPES And Not MONKEYLANG_EXTENSION_TYPE_OCTET
-		#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
-			Return Octet(SMod(O, OCTET_MAX_POSITIVE_NUMBERS))
+	#If (TYPETOOL_SIMULATE_SIGNED_TYPES Or TYPETOOL_SIMULATE_SIGNED_TYPES_AS_UNSIGNED) And Not MONKEYLANG_EXTENSION_TYPE_OCTET
+		#If TYPETOOL_SIMULATE_SIGNED_TYPES_AS_UNSIGNED
+			Return Octet(ApplyUOctetBounds(UOctet(O)))
 		#Else
-			Return (Int(O) | -UOCTET_MAX_POSITIVE_NUMBERS)
+			#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
+				Return Octet(SMod(O, OCTET_MAX_POSITIVE_NUMBERS))
+			#Else
+				Return (Int(O) | -UOCTET_MAX_POSITIVE_NUMBERS)
+			#End
 		#End
 	#Else
 		Return O
@@ -243,11 +265,15 @@ Function ApplyUOctetBounds:UOctet(O:UOctet)
 End
 
 Function ApplyShortBounds:Short(S:Short)
-	#If TYPETOOL_SIMULATE_SIGNED_TYPES And Not MONKEYLANG_EXTENSION_TYPE_SHORT
-		#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
-			Return Short(SMod(S, SHORT_MAX_POSITIVE_NUMBERS))
+	#If (TYPETOOL_SIMULATE_SIGNED_TYPES Or TYPETOOL_SIMULATE_SIGNED_TYPES_AS_UNSIGNED) And Not MONKEYLANG_EXTENSION_TYPE_SHORT
+		#If TYPETOOL_SIMULATE_SIGNED_TYPES_AS_UNSIGNED
+			Return Short(ApplyUShortBounds(UShort(S)))
 		#Else
-			Return Short(Int(S) | -USHORT_MAX_POSITIVE_NUMBERS)
+			#If TYPETOOL_SIMULATE_PROPER_BOUNDS_ROLLOVER
+				Return Short(SMod(S, SHORT_MAX_POSITIVE_NUMBERS))
+			#Else
+				Return Short(Int(S) | -USHORT_MAX_POSITIVE_NUMBERS)
+			#End
 		#End
 	#Else
 		Return S
@@ -272,7 +298,11 @@ End
 
 ' This is just a formality, there's no point to these commands right now:
 Function ApplyIntBounds:Int(I:Int)
-	Return I
+	#If MONKEYLANG_EXTENSION_TYPE_UNISGNED_INT And TYPETOOL_SIMULATE_SIGNED_TYPES_AS_UNSIGNED
+		Return Int(ApplyUIntBounds(UInt(I)))
+	#Else
+		Return I
+	#End
 End
 
 Function ApplyUIntBounds:UInt(I:UInt)
