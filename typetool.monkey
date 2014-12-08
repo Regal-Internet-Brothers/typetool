@@ -9,7 +9,7 @@ Public
 		The types in this module are not usually unique, and you should only
 		expect exact compatibility between obviously compatible aliases.
 		
-		For example, you should not expect a distinction between integer types (Without proper preprocessor-flags checks).
+		For example, you should not expect a distinction between integer types (Without proper preprocessor-flag checks).
 		However, you should generally expect automatic conversion (No matter the implementation).
 	
 	NOTES:
@@ -41,7 +41,7 @@ Public
 		
 		For example: The 'Octet' alias does not necessarily apply 'ApplyOctetBounds' to everything, it's meant to be used for potential memory optimization.
 		
-		* If you were to adopt this module, the best course of action tends to be implementing functions via generics/template using classes.
+		* If you were to adopt this module, the best course of action tends to be implementing functions via generics / template classes.
 		Of course, this is the most ideal situation, not the most realistic one. If you're able to off-load functions to a generic class,
 		go right ahead, but stay away from overloading with these types. If you're going to have a single version of a function,
 		use 'Long' or stick to the usual 'Int' (And maybe 'UInt' and/or 'ULong', but those can be problematic at times).
@@ -124,6 +124,9 @@ Public
 ' Default floating-point extension settings:
 '#MONKEYLANG_EXTENSION_TYPE_DOUBLE = False
 
+' Other:
+#MONKEYLANG_EXTENSION_WIDECHARACTERS = True ' False
+
 ' Imports:
 
 ' Check if the 'util' module is used at all:
@@ -189,7 +192,15 @@ Alias UByte = Byte
 Alias Long_Double = Double
 
 ' Other:
-'Alias Char = UOctet
+#If MONKEYLANG_EXTENSION_WIDECHARACTERS
+	Alias Char = Short ' UShort
+#Else
+	#If LANG = "cpp"
+		Alias Char = Octet
+	#Else
+		Alias Char = Byte ' UOctet
+	#End
+#End
 
 ' Constant variable(s):
 
