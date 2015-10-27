@@ -135,7 +135,7 @@ Public
 #End
 
 #If TYPETOOL_IMPORT_UTIL
-	Import util
+	Import regal.util
 #End
 
 ' Aliases:
