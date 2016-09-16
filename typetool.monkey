@@ -84,6 +84,8 @@ Public
 #End
 
 ' Integer extensions:
+'#MONKEYLANG_TYPE_EXTENSIONS = True
+
 #MONKEYLANG_EXTENSION_UNSIGNED_TYPES = False
 
 ' Check for unsigned types:
